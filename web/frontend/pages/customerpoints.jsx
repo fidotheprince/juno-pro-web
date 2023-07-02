@@ -80,14 +80,14 @@ function MyComponent() {
                 :
                   <LegacyCard>
                     <DataTable 
-                      columnContentTypes={['text', 'numeric', 'text']}
-                      headings={['QR Code', 'Points', 'Add or Remove Points']}
+                      hasZebraStripingOnData
+                      columnContentTypes={['text', 'text']}
+                      headings={['QR Code', 'Add or Remove Points']}
                       rows={qrCodes.map((qrCode) => {
                         //each row is an array of data, the second element is the points
                         //the points are set to 0 for now but will need global state to keep track of points
                         return [
                                   qrCode.title,
-                                  customerPoints, 
                                   <Counters customerPoints={customerPoints} setPoints={setPoints}/>
                         ]
               

@@ -13,6 +13,7 @@ const DEFAULT_PURCHASE_QUANTITY = 1;
 //properties represent CRUD operations;
 export const QRCodesDB = {
   qrCodesTableName: "qr_codes",
+  pointsTableName: "points",
   db: null,
   ready: null,
 
@@ -47,6 +48,27 @@ export const QRCodesDB = {
     ]);
 
     return rawResults[0].id;
+  },
+
+  createPointsRow: async function ({
+    qrCodeID,
+    customerPoints,
+  }) {
+    await this.ready;
+
+    const query = `
+      INSERT INTO ${this.pointsTableName}
+      (qrCodeID, points)
+      VALUES (?, ?)
+      RETURNING qrCodeID;
+    `;
+
+    const rawResults = await this.__query(query, [
+      qrCodeID,
+      customerPoints,
+    ]);
+
+    return rawResults[0].qrCodeID;
   },
 
   update: async function (
@@ -100,6 +122,17 @@ export const QRCodesDB = {
     const results = await this.__query(query, [shopDomain]);
 
     return results.map((qrcode) => this.__addImageUrl(qrcode));
+  },
+
+  listCustomerPoints: async function () {
+    await this.ready;
+    const query = `
+      SELECT * FROM ${this.pointsTableName};
+    `;
+
+    const results = await this.__query(query);
+
+    return results;
   },
 
   read: async function (id) {
@@ -169,6 +202,17 @@ export const QRCodesDB = {
     return rows.length === 1;
   },
 
+  __hasPointsTable: async function () {
+    const query = `
+      SELECT name FROM sqlite_schema
+      WHERE
+        type = 'table' AND
+        name = ?;
+    `;
+    const rows = await this.__query(query, [this.pointsTableName]);
+    return rows.length === 1;
+  },
+
   /* Initializes the connection with the app's sqlite3 database */
   init: async function () {
 
@@ -201,6 +245,39 @@ export const QRCodesDB = {
       /* Tell the various CRUD methods that they can execute */
       this.ready = this.__query(query);
     }
+  },
+
+  //initializes the points table
+  initPointsTable: async function () {
+
+    /* Initializes the connection to the database */
+    this.db = this.db ?? new sqlite3.Database(DEFAULT_DB_FILE);
+
+    const hasPointsTable = await this.__hasPointsTable();
+
+    if (hasPointsTable) {
+
+      this.ready = Promise.resolve();
+      return `table: ${this.pointsTableName} exists`
+
+    } else {
+
+      const query = `CREATE TABLE ${this.pointsTableName} (qrCodeID INTEGER PRIMARY KEY NOT NULL, points INTEGER NOT NULL)`;
+      this.ready = this.__query(query);
+      return `table: ${this.pointsTableName} has already been created`
+
+    } 
+    
+  },
+
+  //drops the points table
+  dropPointsTable: async function () {
+     /* Initializes the connection to the database */
+     this.db = this.db ?? new sqlite3.Database(DEFAULT_DB_FILE);
+
+     const hasPointsTable = await this.__hasPointsTable();
+
+     //if the table exists, drop it
   },
 
   /* Perform a query on the database. Used by the various CRUD methods. */

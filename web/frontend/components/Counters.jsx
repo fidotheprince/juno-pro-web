@@ -4,7 +4,7 @@ import { ButtonGroup, Button, Text, HorizontalGrid} from "@shopify/polaris";
 
 
 //drilled qrCodeId from QRCodeIndex.jsx
-function Counters({qrCodeId}) {
+function Counters({qrCodeID}) {
 
     const [customerPoints, setPoints] = useState(0);
     const fetch = useAuthenticatedFetch();
@@ -16,7 +16,7 @@ function Counters({qrCodeId}) {
         const host = `host=${window.__SHOPIFY_DEV_HOST}`
         const url = `/api/storepoints?${host}`;
         const method = 'POST';
-        const body = JSON.stringify({ qrCodeId, customerPoints });
+        const body = JSON.stringify({ qrCodeID, customerPoints });
 
         const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body });
 

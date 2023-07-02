@@ -57,8 +57,11 @@ function MyComponent() {
       if (response.ok) {
         
         const data = await response.json();
+        
+        //qrCodes customer points exists in this data varaible
+        console.log(data);
         //set data to local state
-        setQRCodes(data);
+        setQRCodes(data.qrCodes);
 
       }
   }
@@ -89,7 +92,7 @@ function MyComponent() {
                         return [
                                   qrCode.title,
                                   <Counters
-                                    qrCodeId={qrCode.id} 
+                                    qrCodeID={qrCode.id} 
                                   />
                         ]
               

@@ -129,8 +129,11 @@ export default function applyQrCodeApiEndpoints(app) {
         await getShopUrlFromSession(req, res)
       );
 
-      const response = await formatQrCodeResponse(req, res, rawCodeData);
-      res.status(200).send(response);
+      //database response for the points table and the qr codes table
+      const qrCodePoints = await QRCodesDB.listCustomerPoints();
+      const qrCodes = await formatQrCodeResponse(req, res, rawCodeData);
+      
+      res.status(200).send({qrCodes, qrCodePoints});
     } catch (error) {
       console.error(error);
       res.status(500).send(error.message);
@@ -163,7 +166,7 @@ export default function applyQrCodeApiEndpoints(app) {
     let error = null;
 
     try {
-      response = {route: 'worked'};
+      response = await QRCodesDB.listCustomerPoints()
     } catch (err) {
       console.log(`Failed to process products/create: ${e.message}`);
       status = 500;
@@ -171,7 +174,8 @@ export default function applyQrCodeApiEndpoints(app) {
     }
 
     res.status(status).send({ 
-      success: status === 200, 
+      success: status === 200,
+      message: response, 
       error,
     });
     
@@ -181,11 +185,17 @@ export default function applyQrCodeApiEndpoints(app) {
 app.post("/api/storepoints", async (req, res) => {
 
   let response;
+  let createResponse;
   let status = 200;
   let error = null;
 
   try {
-    response = req.body;
+    //initializes the points table if it doesn't exist
+    response = await QRCodesDB.initPointsTable();
+    //creates a new row in the points table
+    createResponse = await QRCodesDB.createPointsRow(req.body);
+
+
   } catch (err) {
     console.log(`Failed to process products/create: ${e.message}`);
     status = 500;
@@ -195,7 +205,7 @@ app.post("/api/storepoints", async (req, res) => {
   res.status(status).send({ 
     success: status === 200, 
     error,
-    message: [ 'Points stored successfully', { resp: JSON.stringify(response)}]
+    message: [ 'Points stored successfully', {table: response, createResponse} ]
   });
 
 });

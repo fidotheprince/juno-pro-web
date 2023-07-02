@@ -1,6 +1,14 @@
 import { React, useState } from 'react';
 import { useAuthenticatedFetch } from '../hooks/useAuthenticatedFetch';;
-import { Page, Layout, LegacyCard, Button} from "@shopify/polaris";
+import {  Page,
+          Layout, 
+          LegacyCard, 
+          Button, 
+          Text,
+          ButtonGroup,
+          DataTable,
+        } from "@shopify/polaris";
+import Counters from '../components/Counters';
 
 
 
@@ -16,6 +24,8 @@ function MyComponent() {
 */
   //useState for customer points
   const [customerPoints, setPoints] = useState(0);
+  const [qrCodes, setQRCodes] = useState([]); //useState for QR codes
+  const [rows, setRows] = useState([]);
   const fetch = useAuthenticatedFetch();
 
   //fetch data points data from API using the fetch function
@@ -36,13 +46,59 @@ function MyComponent() {
 
   };
 
+  //fetch existing QR codes from API using the fetch function
+  const fetchQRCodes = async () => {
+
+      const url = `/api/qrcodes`;
+      const method = 'GET';
+  
+      const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' } });
+  
+      if (response.ok) {
+        
+        const data = await response.json();
+        //set data to local state
+        setQRCodes(data);
+
+      }
+  }
+
   return (
     <Page>
       <Layout>
         <Layout.Section>
-          <LegacyCard sectioned title="Point Distributions">
-            <Button onClick={onSubmit}>Customer Points: {customerPoints}</Button>
+          <LegacyCard sectioned title="Add loyalty points to your stores QR Codes">
+            <Button onClick={fetchQRCodes}>Get QR Codes</Button>
           </LegacyCard>
+          <LegacyCard sectioned title="QR Codes">
+               {
+                1 < 0 
+                ? 
+                  <Text variant="heading1xl" as="h1">
+                    You haven't assigened any loyalty points yet.
+                  </Text> 
+                :
+                  <LegacyCard>
+                    <DataTable 
+                      columnContentTypes={['text', 'numeric', 'text']}
+                      headings={['QR Code', 'Points', 'Add or Remove Points']}
+                      rows={qrCodes.map((qrCode) => {
+                        //each row is an array of data, the second element is the points
+                        //the points are set to 0 for now but will need global state to keep track of points
+                        return [
+                                  qrCode.title,
+                                  customerPoints, 
+                                  <Counters customerPoints={customerPoints} setPoints={setPoints}/>
+                        ]
+              
+                      })}
+                    >
+                    </DataTable>
+                  </LegacyCard>
+               }
+    
+          </LegacyCard>
+
         </Layout.Section>
       </Layout>
     </Page>

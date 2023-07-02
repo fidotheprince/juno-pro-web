@@ -44,7 +44,8 @@ app.get(
 );
 app.post(
   shopify.config.webhooks.path,
-  shopify.processWebhooks({ webhookHandlers: GDPRWebhookHandlers })
+  shopify.processWebhooks({ webhookHandlers: GDPRWebhookHandlers }),
+  
 );
 
 applyQrCodePublicEndpoints(app);
@@ -62,9 +63,7 @@ app.use(express.json());
 applyQrCodeApiEndpoints(app);
 
 //app.use(shopify.cspHeaders());
-app.use(serveStatic(STATIC_PATH, { index: false }));
-
-app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
+app.use(serveStatic(STATIC_PATH, { index: false }));app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
   return res
     .status(200)
     .set("Content-Type", "text/html")

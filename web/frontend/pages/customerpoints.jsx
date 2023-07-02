@@ -72,7 +72,7 @@ function MyComponent() {
           </LegacyCard>
           <LegacyCard sectioned title="QR Codes">
                {
-                1 < 0 
+                qrCodes.length === 0 
                 ? 
                   <Text variant="heading1xl" as="h1">
                     You haven't assigened any loyalty points yet.
@@ -88,7 +88,9 @@ function MyComponent() {
                         //the points are set to 0 for now but will need global state to keep track of points
                         return [
                                   qrCode.title,
-                                  <Counters customerPoints={customerPoints} setPoints={setPoints}/>
+                                  <Counters
+                                    qrCodeId={qrCode.id} 
+                                  />
                         ]
               
                       })}

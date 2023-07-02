@@ -33,7 +33,6 @@ function checkHeadersForReauthorization(headers, app) {
     const authUrlHeader =
       headers.get("X-Shopify-API-Request-Failure-Reauthorize-Url") ||
       `/api/auth`;
-
     const redirect = Redirect.create(app);
     redirect.dispatch(
       Redirect.Action.REMOTE,

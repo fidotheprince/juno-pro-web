@@ -9,7 +9,6 @@
 */
 
 import express from "express";
-
 import shopify from "../shopify.js";
 import { QRCodesDB } from "../qr-codes-db.js";
 import {
@@ -87,29 +86,6 @@ export default function applyQrCodeApiEndpoints(app) {
     res.send(shopData.body.data);
   });
 
-  //endpoint used to check if a QR code was used at point of sale
-  app.get("/api/points", async (req, res) => {
-
-    let response;
-    let status = 200;
-    let error = null;
-
-    try {
-      response = {route: 'worked'};
-    } catch (err) {
-      console.log(`Failed to process products/create: ${e.message}`);
-      status = 500;
-      error = e.message;
-    }
-
-    res.status(status).send({ 
-      success: status === 200, 
-      error,
-      asset: { points: 10 } 
-    });
-    
-  });
-
   app.post("/api/qrcodes", async (req, res) => {
 
     try {
@@ -178,4 +154,50 @@ export default function applyQrCodeApiEndpoints(app) {
       res.status(200).send();
     }
   });
+
+  //endpoint used to check retrieve all QRCodes and they loyalty points
+  app.get("/api/points", async (req, res) => {
+
+    let response;
+    let status = 200;
+    let error = null;
+
+    try {
+      response = {route: 'worked'};
+    } catch (err) {
+      console.log(`Failed to process products/create: ${e.message}`);
+      status = 500;
+      error = e.message;
+    }
+
+    res.status(status).send({ 
+      success: status === 200, 
+      error,
+    });
+    
+  });
+
+//endpoint used to store the points of QR code
+app.post("/api/storepoints", async (req, res) => {
+
+  let response;
+  let status = 200;
+  let error = null;
+
+  try {
+    response = req.body;
+  } catch (err) {
+    console.log(`Failed to process products/create: ${e.message}`);
+    status = 500;
+    error = e.message;
+  }
+
+  res.status(status).send({ 
+    success: status === 200, 
+    error,
+    message: [ 'Points stored successfully', { resp: JSON.stringify(response)}]
+  });
+
+});
+  
 }

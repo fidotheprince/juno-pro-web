@@ -26,6 +26,33 @@ function Counters({qrCodeID}) {
         }
     }
 
+    const onUpdate = async () => {
+        const host = `host=${window.__SHOPIFY_DEV_HOST}`
+        const url = `/api/updatepoints/${qrCodeID}?${host}`;
+        const method = 'PUT';
+        const body = JSON.stringify({ customerPoints });
+
+        const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body });
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+        }
+    }
+
+    const onDelete = async () => {
+        const host = `host=${window.__SHOPIFY_DEV_HOST}`
+        const url = `/api/deletepoints/${qrCodeID}?${host}`;
+        const method = 'DELETE';
+
+        const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' } });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+        }
+    }
+
+
     return (
         <HorizontalGrid gap="4">
             <Text>
@@ -35,6 +62,8 @@ function Counters({qrCodeID}) {
                 <Button onClick={()=>{setPoints(customerPoints + 1)}}>+</Button>
                 <Button onClick={()=>{setPoints(customerPoints - 1)}}>-</Button>
                 <Button primary onClick={onSubmit}>Save</Button>
+                <Button onClick={onUpdate}>Update Points</Button>
+                <Button onClick={onDelete}>Reset Points</Button>
             </ButtonGroup>
         </HorizontalGrid>
     );

@@ -58,7 +58,7 @@ function MyComponent() {
         
         const data = await response.json();
         
-        //qrCodes customer points exists in this data varaible
+        //qrCodes customer points exists in this data varable
         console.log(data);
         //set data to local state
         setQRCodes(data.qrCodes);

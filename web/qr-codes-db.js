@@ -112,6 +112,24 @@ export const QRCodesDB = {
     return true;
   },
 
+  updateCustomerPoints: async function (qrCodeID, points) {
+    await this.ready;
+
+    const query = `
+      UPDATE ${this.pointsTableName}
+      SET
+        points = ?
+      WHERE
+        qrCodeID = ?;
+    `;
+
+    await this.__query(query, [
+      points,
+      qrCodeID,
+    ]);
+    return true;
+  },
+
   list: async function (shopDomain) {
     await this.ready;
     const query = `
@@ -154,6 +172,16 @@ export const QRCodesDB = {
       WHERE id = ?;
     `;
     await this.__query(query, [id]);
+    return true;
+  },
+
+  deleteCustomerPoints: async function (qrCodeID) {
+    await this.ready;
+    const query = `
+      DELETE FROM ${this.pointsTableName}
+      WHERE qrCodeID = ?;
+    `;
+    await this.__query(query, [qrCodeID]);
     return true;
   },
 
@@ -270,7 +298,7 @@ export const QRCodesDB = {
     
   },
 
-  //drops the points table
+  //drops the points table needs to be invoked via middleware. 
   dropPointsTable: async function () {
      /* Initializes the connection to the database */
      this.db = this.db ?? new sqlite3.Database(DEFAULT_DB_FILE);
@@ -278,6 +306,16 @@ export const QRCodesDB = {
      const hasPointsTable = await this.__hasPointsTable();
 
      //if the table exists, drop it
+     if (hasPointsTable) {
+        
+        const query = `DROP TABLE ${this.pointsTableName}`;
+        this.ready = this.__query(query);
+        return `table: ${this.pointsTableName} has been dropped`
+  
+     } else {
+      this.ready = Promise.resolve();
+      return `table: ${this.pointsTableName} does not exist`
+     }
   },
 
   /* Perform a query on the database. Used by the various CRUD methods. */

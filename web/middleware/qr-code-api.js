@@ -122,6 +122,19 @@ export default function applyQrCodeApiEndpoints(app) {
     }
   });
 
+  app.put("/api/updatepoints/:id", async (req, res) => {
+    const { id } = req.params;
+    const { customerPoints } = req.body;
+    const points = customerPoints;
+    const qrCodeID = id;
+    try {
+      const response = await QRCodesDB.updateCustomerPoints(qrCodeID, points);
+      res.status(200).send({success: response, updated: ` qrCodeID: ${id} is now associated with ${points} loyalty points`});
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  });
+
   //returns a list of all QR codes, which is used in the QRCodeIndex.js file
   app.get("/api/qrcodes", async (req, res) => {
     try {
@@ -130,9 +143,9 @@ export default function applyQrCodeApiEndpoints(app) {
       );
 
       //database response for the points table and the qr codes table
-      const qrCodePoints = await QRCodesDB.listCustomerPoints();
+      const qrCodePoints = await QRCodesDB.listCustomerPoints(); // will attempt to read an non-existing table if table is not initialized prior to this call
       const qrCodes = await formatQrCodeResponse(req, res, rawCodeData);
-      
+
       res.status(200).send({qrCodes, qrCodePoints});
     } catch (error) {
       console.error(error);
@@ -158,6 +171,18 @@ export default function applyQrCodeApiEndpoints(app) {
     }
   });
 
+
+
+  app.delete("/api/deletepoints/:id", async (req, res) => {
+    const { id } = req.params;
+    const qrCodeID = id;
+    try {
+      const response = await QRCodesDB.deleteCustomerPoints(qrCodeID);
+      res.status(200).send({success: response, deleted: ` qrCodeID: ${qrCodeID} has been deleted`});
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  })
   //endpoint used to check retrieve all QRCodes and they loyalty points
   app.get("/api/points", async (req, res) => {
 

@@ -1,11 +1,10 @@
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import { useAuthenticatedFetch } from '../hooks/useAuthenticatedFetch';;
 import {  Page,
           Layout, 
           LegacyCard, 
           Button, 
           Text,
-          ButtonGroup,
           DataTable,
         } from "@shopify/polaris";
 import Counters from '../components/Counters';
@@ -16,43 +15,25 @@ import Counters from '../components/Counters';
 function MyComponent() {
 
 /*
-  This component dynamically updates a table of customer points anytime a customer makes a purchase
-  using a QR code. It identifies once a customer has reached 10 points. 
-
-  For a final project, this component would be used to create a rewards program for customers. Here you'd notify the
-  customer and send them a discount code for a free product. 
+  This component dynamically updates a table of customer points associated with a qrCode. 
 */
+
   //useState for customer points
   const [qrPoints, setQRPoints] = useState([]);
   const [qrCodes, setQRCodes] = useState([]); //useState for QR codes
   const fetch = useAuthenticatedFetch();
 
-  //fetch data points data from API using the fetch function
-  const onSubmit = async () => {
+  //useEffect to fetch customer points from API
+  useEffect(() => {
 
-    //host is added here to bypass shopify.ensureInstalledOnShop() in the backend
-    const host = `host=${window.__SHOPIFY_DEV_HOST}`
-    const url = `/api/points?${host}`;
-    const method = 'GET';
-
-    const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' } });
-
-    if (response.ok) {
-      const data = await response.json();
-      const { points } = data.asset;
-      setPoints(points + customerPoints);
-    } 
-
-  };
-
-  //fetch existing QR codes from API using the fetch function
-  const fetchQRCodes = async () => {
+    //fetch existing QR codes from API using the fetch function
+    const fetchQRCodes = async () => {
 
       const url = `/api/qrcodes`;
       const method = 'GET';
-  
+
       const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' } });
-  
+
       if (response.ok) {
         
         const data = await response.json();
@@ -63,14 +44,23 @@ function MyComponent() {
         setQRCodes(data.qrCodes);
 
       }
-  }
+    }
+
+    fetchQRCodes();
+
+  }, []);
 
   return (
     <Page>
       <Layout>
         <Layout.Section>
-          <LegacyCard sectioned title="Add loyalty points to your stores QR Codes">
-            <Button onClick={fetchQRCodes}>Get QR Codes</Button>
+          <LegacyCard 
+            sectioned 
+            background="bg-subdued"
+          >
+            <Text variant="headingLg" as="h5" alignment="center">
+            Add customer loyalty points to your QRCodes.
+            </Text>
           </LegacyCard>
           <LegacyCard sectioned title="QR Codes">
                {
@@ -92,10 +82,12 @@ function MyComponent() {
                           this array corresponds with the columnContentTypes array
                           and also the headings array, which sets the type of data
                           and the heading associated with a given column
+
+                          fetchQRCodes is drilled into the Counters component so that the table can be updated
                         */
                         
                         //grab the points object from the qrPoints array {qrCodeID: 9, points: 7}
-                        let pointsObect = qrPoints.find((qrCodePointsObject) => qrCodePointsObject.qrCodeID === qrCode.id);
+                        let pointsObect = qrPoints.find(qrCodePointsObject => qrCodePointsObject.qrCodeID === qrCode.id);
 
                         //if there is a points object for this qrCode then destructure the points property
                         if(pointsObect) {
@@ -107,7 +99,7 @@ function MyComponent() {
                             qrCode.title,
                             <Counters
                               points={points}  
-                              qrCodeID={qrCode.id} 
+                              qrCodeID={qrCode.id}
                             />
                           ]
 
@@ -122,9 +114,6 @@ function MyComponent() {
                           />
                         ]
                       
-
-
-              
                       })}
                     >
                     </DataTable>

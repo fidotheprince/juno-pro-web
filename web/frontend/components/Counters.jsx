@@ -1,6 +1,8 @@
 import {React, useState} from "react";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 import { ButtonGroup, Button, Text, HorizontalGrid} from "@shopify/polaris";
+import { use } from "i18next";
+import { show } from "@shopify/app-bridge/actions/ContextualSaveBar";
 
 
 //drilled qrCodeId from QRCodeIndex.jsx
@@ -10,6 +12,7 @@ function Counters({qrCodeID, points}) {
     //points is the customer points since the last time the value was saved
     //if a QRCode has never been assigned points, then the value is 0
     const [customerPoints, setPoints] = useState(points);
+    const [showUDButtons, setUDButtons] = useState(false);
     const fetch = useAuthenticatedFetch();
 
     //save points to API using the fetch function
@@ -25,6 +28,8 @@ function Counters({qrCodeID, points}) {
 
         if (response.ok) {
             const data = await response.json();
+            //shows update and delete buttons
+            setUDButtons(true);
             console.log(data);
         }
     }
@@ -48,8 +53,13 @@ function Counters({qrCodeID, points}) {
         const method = 'DELETE';
 
         const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' } });
+        //hides update and delete buttons
+        setUDButtons(false);
+        
+
 
         if (response.ok) {
+            setPoints(0);
             const data = await response.json();
             console.log(data);
         }
@@ -59,17 +69,32 @@ function Counters({qrCodeID, points}) {
     return (
         <HorizontalGrid gap="4">
             <Text>
-                Customer Points: {customerPoints}
+                {showUDButtons ? `Current Points: ${customerPoints}` : `Customer Points: ${customerPoints}`}
             </Text>
             <ButtonGroup>
                 <Button onClick={()=>{setPoints(customerPoints + 1)}}>+</Button>
                 <Button onClick={()=>{setPoints(customerPoints - 1)}}>-</Button>
-                <Button primary onClick={onSubmit}>Save</Button>
-                <Button onClick={onUpdate}>Update Points</Button>
-                <Button onClick={onDelete}>Reset Points</Button>
+                {
+                    showUDButtons
+                    ? 
+                    <>
+                        <Button primary onClick={onUpdate}>
+                            Save
+                        </Button>
+                        <Button style={{paddingLeft: '2px'}} onClick={onDelete}>
+                            Reset
+                        </Button>
+                    </>
+                    : 
+                    <Button primary onClick={onSubmit}>
+                        Save
+                    </Button>
+                }
             </ButtonGroup>
         </HorizontalGrid>
     );
-  }
+
+}
+
   
   export default Counters;

@@ -222,9 +222,9 @@ app.post("/api/storepoints", async (req, res) => {
 
 
   } catch (err) {
-    console.log(`Failed to process products/create: ${e.message}`);
+    console.log(`Failed to process products/create: ${err.message}`);
     status = 500;
-    error = e.message;
+    error = 'error'
   }
 
   res.status(status).send({ 

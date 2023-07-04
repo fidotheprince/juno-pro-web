@@ -4,9 +4,12 @@ import { ButtonGroup, Button, Text, HorizontalGrid} from "@shopify/polaris";
 
 
 //drilled qrCodeId from QRCodeIndex.jsx
-function Counters({qrCodeID}) {
-
-    const [customerPoints, setPoints] = useState(0);
+function Counters({qrCodeID, points}) {
+    
+    
+    //points is the customer points since the last time the value was saved
+    //if a QRCode has never been assigned points, then the value is 0
+    const [customerPoints, setPoints] = useState(points);
     const fetch = useAuthenticatedFetch();
 
     //save points to API using the fetch function

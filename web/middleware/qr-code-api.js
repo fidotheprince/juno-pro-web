@@ -9,7 +9,6 @@
 */
 
 import express from "express";
-
 import shopify from "../shopify.js";
 import { QRCodesDB } from "../qr-codes-db.js";
 import {
@@ -87,29 +86,6 @@ export default function applyQrCodeApiEndpoints(app) {
     res.send(shopData.body.data);
   });
 
-  //endpoint used to check if a QR code was used at point of sale
-  app.get("/api/points", async (req, res) => {
-
-    let response;
-    let status = 200;
-    let error = null;
-
-    try {
-      response = {route: 'worked'};
-    } catch (err) {
-      console.log(`Failed to process products/create: ${e.message}`);
-      status = 500;
-      error = e.message;
-    }
-
-    res.status(status).send({ 
-      success: status === 200, 
-      error,
-      asset: { points: 10 } 
-    });
-    
-  });
-
   app.post("/api/qrcodes", async (req, res) => {
 
     try {
@@ -146,6 +122,19 @@ export default function applyQrCodeApiEndpoints(app) {
     }
   });
 
+  app.put("/api/updatepoints/:id", async (req, res) => {
+    const { id } = req.params;
+    const { customerPoints } = req.body;
+    const points = customerPoints;
+    const qrCodeID = id;
+    try {
+      const response = await QRCodesDB.updateCustomerPoints(qrCodeID, points);
+      res.status(200).send({success: response, updated: ` qrCodeID: ${id} is now associated with ${points} loyalty points`});
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  });
+
   //returns a list of all QR codes, which is used in the QRCodeIndex.js file
   app.get("/api/qrcodes", async (req, res) => {
     try {
@@ -153,8 +142,11 @@ export default function applyQrCodeApiEndpoints(app) {
         await getShopUrlFromSession(req, res)
       );
 
-      const response = await formatQrCodeResponse(req, res, rawCodeData);
-      res.status(200).send(response);
+      //database response for the points table and the qr codes table
+      const qrCodePoints = await QRCodesDB.listCustomerPoints(); // will attempt to read an non-existing table if table is not initialized prior to this call
+      const qrCodes = await formatQrCodeResponse(req, res, rawCodeData);
+
+      res.status(200).send({qrCodes, qrCodePoints});
     } catch (error) {
       console.error(error);
       res.status(500).send(error.message);
@@ -178,4 +170,69 @@ export default function applyQrCodeApiEndpoints(app) {
       res.status(200).send();
     }
   });
+
+
+
+  app.delete("/api/deletepoints/:id", async (req, res) => {
+    const { id } = req.params;
+    const qrCodeID = id;
+    try {
+      const response = await QRCodesDB.deleteCustomerPoints(qrCodeID);
+      res.status(200).send({success: response, deleted: ` qrCodeID: ${qrCodeID} has been deleted`});
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  })
+  //endpoint used to check retrieve all QRCodes and they loyalty points
+  app.get("/api/points", async (req, res) => {
+
+    let response;
+    let status = 200;
+    let error = null;
+
+    try {
+      response = await QRCodesDB.listCustomerPoints()
+    } catch (err) {
+      console.log(`Failed to process products/create: ${e.message}`);
+      status = 500;
+      error = e.message;
+    }
+
+    res.status(status).send({ 
+      success: status === 200,
+      message: response, 
+      error,
+    });
+    
+  });
+
+//endpoint used to store the points of QR code
+app.post("/api/storepoints", async (req, res) => {
+
+  let response;
+  let createResponse;
+  let status = 200;
+  let error = null;
+
+  try {
+    //initializes the points table if it doesn't exist
+    response = await QRCodesDB.initPointsTable();
+    //creates a new row in the points table
+    createResponse = await QRCodesDB.createPointsRow(req.body);
+
+
+  } catch (err) {
+    console.log(`Failed to process products/create: ${err.message}`);
+    status = 500;
+    error = 'error'
+  }
+
+  res.status(status).send({ 
+    success: status === 200, 
+    error,
+    message: [ 'Points stored successfully', {table: response, createResponse} ]
+  });
+
+});
+  
 }

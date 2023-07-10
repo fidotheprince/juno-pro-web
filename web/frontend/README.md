@@ -13,4 +13,8 @@ This repository is the frontend for Shopify’s app starter templates. **You pro
 
 ## License
 
-This repository is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+This repository is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT). 
+
+## References
+
+This repository was forked from the [Shopify/shopify-app-node]
